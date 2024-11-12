@@ -1,0 +1,46 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  html {
+    scroll-behavior: smooth;
+  }
+  
+  body {
+    @apply antialiased text-gray-900;
+  }
+}
+
+@layer components {
+  .btn {
+    @apply inline-flex items-center justify-center rounded-md px-4 py-2 text-sm font-medium transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2;
+  }
+  
+  .btn-primary {
+    @apply bg-[#B31B1B] text-white hover:bg-[#B31B1B]/90 focus-visible:ring-[#B31B1B];
+  }
+  
+  .btn-secondary {
+    @apply bg-white text-gray-900 ring-1 ring-gray-200 hover:bg-gray-50 focus-visible:ring-[#B31B1B];
+  }
+}
+
+/* Chatbot customization */
+.rcw-widget-container {
+  z-index: 1000;
+}
+
+.rcw-conversation-container .rcw-header {
+  background-color: #B31B1B;
+}
+
+.rcw-message-text {
+  background-color: #FFC40C !important;
+  color: #000 !important;
+}
+
+.rcw-client .rcw-message-text {
+  background-color: #B31B1B !important;
+  color: white !important;
+}
