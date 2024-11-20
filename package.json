@@ -10,13 +10,17 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "clsx": "^2.1.0",
+    "date-fns": "^3.3.1",
+    "dexie": "^3.2.6",
+    "dexie-react-hooks": "^1.1.7",
+    "firebase": "^10.14.1",
+    "jose": "^5.2.3",
     "lucide-react": "^0.344.0",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
     "react-router-dom": "^6.22.3",
-    "zustand": "^4.5.2",
-    "date-fns": "^3.3.1",
-    "clsx": "^2.1.0"
+    "zustand": "^4.5.2"
   },
   "devDependencies": {
     "@eslint/js": "^9.9.1",

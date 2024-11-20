@@ -15,14 +15,14 @@ export function Footer() {
               <a href="#" className="text-gray-400 hover:text-[#FFC40C]">
                 <Twitter className="h-6 w-6" />
               </a>
-              <a href="#" className="text-gray-400 hover:text-[#FFC40C]">
+              <a href="https://youtube.com/@ameyaasocial" className="text-gray-400 hover:text-[#FFC40C]" target='_blank'>
                 <Youtube className="h-6 w-6" />
               </a>
               <a href="#" className="text-gray-400 hover:text-[#FFC40C]">
                 <Facebook className="h-6 w-6" />
               </a>
-              <a href="#" className="text-gray-400 hover:text-[#FFC40C]">
-                <Github className="h-6 w-6" />
+              <a href="https://wa.me/+919704136398" className="text-gray-400 hover:text-[#FFC40C]" target='_blank'>
+                <Phone className="h-6 w-6" />
               </a>
             </div>
           </div>
@@ -40,7 +40,7 @@ export function Footer() {
                 </li>
                 <li className="flex items-center text-gray-300">
                   <MapPin className="h-5 w-5 mr-2" />
-                  <span>123 Music Street, Mumbai, India</span>
+                  <span>Manikonda,Hyderabad</span>
                 </li>
               </ul>
             </div>
@@ -48,7 +48,7 @@ export function Footer() {
               <h3 className="text-sm font-semibold leading-6 text-white">Quick Links</h3>
               <ul role="list" className="mt-6 space-y-4">
                 <li>
-                  <a href="#" className="text-sm leading-6 text-gray-300 hover:text-white">
+                  <a href="/about" className="text-sm leading-6 text-gray-300 hover:text-white">
                     About Us
                   </a>
                 </li>

@@ -5,10 +5,9 @@ import { AuthModal } from '../components/auth/AuthModal';
 export function AuthPage() {
   const navigate = useNavigate();
   const location = useLocation();
-  const from = location.state?.from?.pathname || '/dashboard';
 
   const handleClose = () => {
-    navigate(from);
+    navigate('/');
   };
 
   return (

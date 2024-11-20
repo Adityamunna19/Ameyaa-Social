@@ -1,13 +1,49 @@
-import React, { useState } from 'react';
-import { Download, Database } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { Download, Database, Check, X } from 'lucide-react';
 import { csvAuth } from '../../services/csvAuth';
 import { DataView } from './DataView';
+import { db } from '../../db';
+import { bookingService } from '../../services/bookingService';
+import { Booking } from '../../types/booking';
+import { format } from 'date-fns';
 
 export function AdminDashboard() {
   const [showDataView, setShowDataView] = useState(true);
+  const [pendingBookings, setPendingBookings] = useState<Booking[]>([]);
+
+  useEffect(() => {
+    const fetchPendingBookings = async () => {
+      const bookings = await db.bookings
+        .where('status')
+        .equals('pending')
+        .toArray();
+      setPendingBookings(bookings);
+    };
+    fetchPendingBookings();
+  }, []);
 
   const handleDownloadUsers = () => {
     csvAuth.downloadCsv();
+  };
+
+  const handleConfirmBooking = async (bookingId: string) => {
+    try {
+      await bookingService.confirmBooking(bookingId);
+      setPendingBookings(pendingBookings.filter(booking => booking.id !== bookingId));
+      alert('Booking confirmed successfully');
+    } catch (error) {
+      alert('Failed to confirm booking');
+    }
+  };
+
+  const handleRejectBooking = async (bookingId: string) => {
+    try {
+      await bookingService.cancelBooking(bookingId);
+      setPendingBookings(pendingBookings.filter(booking => booking.id !== bookingId));
+      alert('Booking rejected successfully');
+    } catch (error) {
+      alert('Failed to reject booking');
+    }
   };
 
   return (
@@ -34,6 +70,49 @@ export function AdminDashboard() {
               Download CSV
             </button>
           </div>
+        </div>
+
+        <div className="mb-8">
+          <h3 className="text-xl font-semibold text-gray-900 mb-4">Pending Bookings</h3>
+          {pendingBookings.length === 0 ? (
+            <p className="text-gray-600">No pending bookings</p>
+          ) : (
+            <div className="grid gap-4">
+              {pendingBookings.map((booking) => (
+                <div
+                  key={booking.id}
+                  className="border border-gray-200 rounded-lg p-4 flex items-center justify-between bg-white hover:shadow-md transition-shadow"
+                >
+                  <div className="flex-1">
+                    <div className="flex items-center gap-4">
+                      <div>
+                        <p className="font-semibold">{booking.userName}</p>
+                        <p className="text-sm text-gray-600">{booking.phone}</p>
+                      </div>
+                      <div className="text-sm text-gray-600">
+                        <p>{format(new Date(booking.date), 'MMMM d, yyyy')}</p>
+                        <p className="capitalize">{booking.timeSlot}</p>
+                      </div>
+                    </div>
+                  </div>
+                  <div className="flex gap-2">
+                    <button
+                      onClick={() => handleConfirmBooking(booking.id)}
+                      className="p-2 text-green-600 hover:bg-green-50 rounded-full"
+                    >
+                      <Check className="h-5 w-5" />
+                    </button>
+                    <button
+                      onClick={() => handleRejectBooking(booking.id)}
+                      className="p-2 text-red-600 hover:bg-red-50 rounded-full"
+                    >
+                      <X className="h-5 w-5" />
+                    </button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
         </div>
 
         {showDataView && <DataView />}

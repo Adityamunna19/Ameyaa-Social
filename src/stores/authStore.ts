@@ -1,10 +1,7 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import { AuthState, User } from '../types/auth';
-import { csvAuth } from '../services/csvAuth';
-
-// Initialize admin account
-csvAuth.initializeAdmin();
+import { authService } from '../services/authService';
 
 export const useAuthStore = create<AuthState>()(
   persist(
@@ -12,11 +9,19 @@ export const useAuthStore = create<AuthState>()(
       user: null,
       isAuthenticated: false,
 
-      login: async (email: string, password: string) => {
-        const user = csvAuth.validateCredentials(email, password);
-        
-        if (!user) {
-          throw new Error('Invalid credentials');
+      login: async (identifier: string, method: 'email' | 'phone-auth') => {
+        let user: User;
+
+        if (method === 'phone-auth') {
+          // Create or get user by phone number
+          user = {
+            id: identifier, // Using phone number as ID for simplicity
+            phone: identifier,
+            role: 'user',
+          };
+        } else {
+          const { user: emailUser } = await authService.login(identifier, 'password');
+          user = emailUser;
         }
 
         set({ user, isAuthenticated: true });
@@ -27,22 +32,8 @@ export const useAuthStore = create<AuthState>()(
       },
 
       signup: async (email: string, password: string, name: string) => {
-        if (csvAuth.findUser(email)) {
-          throw new Error('Email already exists');
-        }
-
-        const newUser = {
-          id: Math.random().toString(36).substr(2, 9),
-          email,
-          name,
-          password,
-          role: 'user' as const,
-        };
-
-        csvAuth.addUser(newUser);
-
-        const { password: _, ...userWithoutPassword } = newUser;
-        set({ user: userWithoutPassword, isAuthenticated: true });
+        const { user } = await authService.signup(email, password, name);
+        set({ user, isAuthenticated: true });
       },
     }),
     {

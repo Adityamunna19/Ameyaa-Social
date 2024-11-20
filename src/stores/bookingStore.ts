@@ -1,5 +1,6 @@
 import { create } from 'zustand';
 import { BookingState, TimeSlot, Booking } from '../types/booking';
+import { bookingService } from '../services/bookingService';
 import { useAuthStore } from './authStore';
 
 export const useBookingStore = create<BookingState>((set, get) => ({
@@ -9,26 +10,14 @@ export const useBookingStore = create<BookingState>((set, get) => ({
     const user = useAuthStore.getState().user;
     if (!user) throw new Error('User not authenticated');
 
-    // Simulate API call
-    await new Promise((resolve) => setTimeout(resolve, 1000));
-
-    const newBooking: Booking = {
-      id: Math.random().toString(36).substr(2, 9),
-      userId: user.id,
-      date,
-      timeSlot,
-      status: 'confirmed',
-    };
-
+    const booking = await bookingService.createBooking(user.id, date, timeSlot);
     set((state) => ({
-      bookings: [...state.bookings, newBooking],
+      bookings: [...state.bookings, booking],
     }));
   },
 
   cancelBooking: async (bookingId: string) => {
-    // Simulate API call
-    await new Promise((resolve) => setTimeout(resolve, 1000));
-
+    await bookingService.cancelBooking(bookingId);
     set((state) => ({
       bookings: state.bookings.map((booking) =>
         booking.id === bookingId
@@ -38,12 +27,7 @@ export const useBookingStore = create<BookingState>((set, get) => ({
     }));
   },
 
-  getAvailableSlots: (date: string) => {
-    const allSlots: TimeSlot[] = ['morning', 'afternoon', 'evening', 'night'];
-    const bookedSlots = get().bookings
-      .filter((b) => b.date === date && b.status === 'confirmed')
-      .map((b) => b.timeSlot);
-
-    return allSlots.filter((slot) => !bookedSlots.includes(slot));
+  getAvailableSlots: async (date: string) => {
+    return await bookingService.getAvailableSlots(date);
   },
 }));

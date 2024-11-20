@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { format, addDays, isBefore, startOfToday } from 'date-fns';
 import { Calendar, Clock } from 'lucide-react';
 import { useBookingStore } from '../../stores/bookingStore';
@@ -9,10 +9,20 @@ import { AuthModal } from '../auth/AuthModal';
 export function BookingCalendar() {
   const [selectedDate, setSelectedDate] = useState(startOfToday());
   const [showAuthModal, setShowAuthModal] = useState(false);
+  const [availableSlots, setAvailableSlots] = useState<TimeSlot[]>([]);
+  const [phone, setPhone] = useState('');
+  const [showPhoneInput, setShowPhoneInput] = useState(false);
+  const [selectedSlot, setSelectedSlot] = useState<TimeSlot | null>(null);
   const { isAuthenticated } = useAuthStore();
   const { getAvailableSlots, createBooking } = useBookingStore();
 
-  const availableSlots = getAvailableSlots(format(selectedDate, 'yyyy-MM-dd'));
+  useEffect(() => {
+    const fetchAvailableSlots = async () => {
+      const slots = await getAvailableSlots(format(selectedDate, 'yyyy-MM-dd'));
+      setAvailableSlots(slots);
+    };
+    fetchAvailableSlots();
+  }, [selectedDate, getAvailableSlots]);
 
   const handleDateSelect = (date: Date) => {
     if (!isBefore(date, startOfToday())) {
@@ -20,15 +30,28 @@ export function BookingCalendar() {
     }
   };
 
-  const handleSlotSelect = async (slot: TimeSlot) => {
+  const handleSlotSelect = (slot: TimeSlot) => {
     if (!isAuthenticated) {
       setShowAuthModal(true);
       return;
     }
+    setSelectedSlot(slot);
+    setShowPhoneInput(true);
+  };
+
+  const handleBooking = async () => {
+    if (!selectedSlot || !phone) return;
 
     try {
-      await createBooking(format(selectedDate, 'yyyy-MM-dd'), slot);
-      alert('Booking confirmed!');
+      await createBooking(format(selectedDate, 'yyyy-MM-dd'), selectedSlot, phone);
+      alert('Booking request sent! Please wait for admin confirmation.');
+      // Reset states
+      setPhone('');
+      setShowPhoneInput(false);
+      setSelectedSlot(null);
+      // Refresh available slots
+      const slots = await getAvailableSlots(format(selectedDate, 'yyyy-MM-dd'));
+      setAvailableSlots(slots);
     } catch (error) {
       alert('Failed to create booking');
     }
@@ -85,6 +108,30 @@ export function BookingCalendar() {
           })}
         </div>
       </div>
+
+      {showPhoneInput && (
+        <div className="mt-8">
+          <h3 className="text-lg font-semibold mb-2">Enter Your Phone Number</h3>
+          <div className="flex gap-4">
+            <input
+              type="tel"
+              value={phone}
+              onChange={(e) => setPhone(e.target.value)}
+              placeholder="Enter WhatsApp number"
+              className="flex-1 px-4 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-[#B31B1B]"
+            />
+            <button
+              onClick={handleBooking}
+              className="px-6 py-2 bg-[#B31B1B] text-white rounded-md hover:bg-[#B31B1B]/90"
+            >
+              Book Now
+            </button>
+          </div>
+          <p className="mt-2 text-sm text-gray-600">
+            You'll receive booking confirmation on this WhatsApp number
+          </p>
+        </div>
+      )}
 
       <AuthModal isOpen={showAuthModal} onClose={() => setShowAuthModal(false)} />
     </div>
