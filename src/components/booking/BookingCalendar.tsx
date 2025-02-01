@@ -1,28 +1,13 @@
-import React, { useState, useEffect } from 'react';
-import { format, addDays, isBefore, startOfToday } from 'date-fns';
-import { Calendar, Clock } from 'lucide-react';
-import { useBookingStore } from '../../stores/bookingStore';
-import { TimeSlot } from '../../types/booking';
-import { useAuthStore } from '../../stores/authStore';
-import { AuthModal } from '../auth/AuthModal';
+import React, { useState, useEffect } from "react";
+import { format, addDays, isBefore, startOfToday } from "date-fns";
+import { Calendar, Clock } from "lucide-react";
+import { TimeSlot } from "../../types/booking";
 
 export function BookingCalendar() {
   const [selectedDate, setSelectedDate] = useState(startOfToday());
-  const [showAuthModal, setShowAuthModal] = useState(false);
-  const [availableSlots, setAvailableSlots] = useState<TimeSlot[]>([]);
-  const [phone, setPhone] = useState('');
+  const [phone, setPhone] = useState("");
   const [showPhoneInput, setShowPhoneInput] = useState(false);
   const [selectedSlot, setSelectedSlot] = useState<TimeSlot | null>(null);
-  const { isAuthenticated } = useAuthStore();
-  const { getAvailableSlots, createBooking } = useBookingStore();
-
-  useEffect(() => {
-    const fetchAvailableSlots = async () => {
-      const slots = await getAvailableSlots(format(selectedDate, 'yyyy-MM-dd'));
-      setAvailableSlots(slots);
-    };
-    fetchAvailableSlots();
-  }, [selectedDate, getAvailableSlots]);
 
   const handleDateSelect = (date: Date) => {
     if (!isBefore(date, startOfToday())) {
@@ -31,10 +16,6 @@ export function BookingCalendar() {
   };
 
   const handleSlotSelect = (slot: TimeSlot) => {
-    if (!isAuthenticated) {
-      setShowAuthModal(true);
-      return;
-    }
     setSelectedSlot(slot);
     setShowPhoneInput(true);
   };
@@ -43,19 +24,24 @@ export function BookingCalendar() {
     if (!selectedSlot || !phone) return;
 
     try {
-      await createBooking(format(selectedDate, 'yyyy-MM-dd'), selectedSlot, phone);
-      alert('Booking request sent! Please wait for admin confirmation.');
+      alert(
+        "Thank you for your booking request! We will contact you shortly on WhatsApp to confirm your slot."
+      );
       // Reset states
-      setPhone('');
+      setPhone("");
       setShowPhoneInput(false);
       setSelectedSlot(null);
-      // Refresh available slots
-      const slots = await getAvailableSlots(format(selectedDate, 'yyyy-MM-dd'));
-      setAvailableSlots(slots);
     } catch (error) {
-      alert('Failed to create booking');
+      alert("Failed to create booking. Please try again.");
     }
   };
+
+  const availableSlots: TimeSlot[] = [
+    "morning",
+    "afternoon",
+    "evening",
+    "night",
+  ];
 
   return (
     <div className="max-w-3xl mx-auto p-6 bg-white rounded-lg shadow-lg">
@@ -64,20 +50,21 @@ export function BookingCalendar() {
         <div className="grid grid-cols-7 gap-2">
           {[...Array(7)].map((_, i) => {
             const date = addDays(startOfToday(), i);
-            const isSelected = format(date, 'yyyy-MM-dd') === format(selectedDate, 'yyyy-MM-dd');
-            
+            const isSelected =
+              format(date, "yyyy-MM-dd") === format(selectedDate, "yyyy-MM-dd");
+
             return (
               <button
                 key={i}
                 onClick={() => handleDateSelect(date)}
                 className={`p-4 rounded-lg text-center ${
                   isSelected
-                    ? 'bg-[#B31B1B] text-white'
-                    : 'bg-gray-50 hover:bg-gray-100'
+                    ? "bg-[#B31B1B] text-white"
+                    : "bg-gray-50 hover:bg-gray-100"
                 }`}
               >
-                <div className="text-sm">{format(date, 'EEE')}</div>
-                <div className="text-lg font-semibold">{format(date, 'd')}</div>
+                <div className="text-sm">{format(date, "EEE")}</div>
+                <div className="text-lg font-semibold">{format(date, "d")}</div>
               </button>
             );
           })}
@@ -85,33 +72,28 @@ export function BookingCalendar() {
       </div>
 
       <div>
-        <h2 className="text-2xl font-bold text-gray-900 mb-4">Available Slots</h2>
+        <h2 className="text-2xl font-bold text-gray-900 mb-4">
+          Available Slots
+        </h2>
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-          {(['morning', 'afternoon', 'evening', 'night'] as TimeSlot[]).map((slot) => {
-            const isAvailable = availableSlots.includes(slot);
-            
-            return (
-              <button
-                key={slot}
-                onClick={() => isAvailable && handleSlotSelect(slot)}
-                disabled={!isAvailable}
-                className={`p-4 rounded-lg flex flex-col items-center ${
-                  isAvailable
-                    ? 'bg-gray-50 hover:bg-gray-100'
-                    : 'bg-gray-100 opacity-50 cursor-not-allowed'
-                }`}
-              >
-                <Clock className="h-6 w-6 mb-2" />
-                <span className="capitalize">{slot}</span>
-              </button>
-            );
-          })}
+          {availableSlots.map((slot) => (
+            <button
+              key={slot}
+              onClick={() => handleSlotSelect(slot)}
+              className="p-4 rounded-lg flex flex-col items-center bg-gray-50 hover:bg-gray-100"
+            >
+              <Clock className="h-6 w-6 mb-2" />
+              <span className="capitalize">{slot}</span>
+            </button>
+          ))}
         </div>
       </div>
 
       {showPhoneInput && (
         <div className="mt-8">
-          <h3 className="text-lg font-semibold mb-2">Enter Your Phone Number</h3>
+          <h3 className="text-lg font-semibold mb-2">
+            Enter Your Phone Number
+          </h3>
           <div className="flex gap-4">
             <input
               type="tel"
@@ -132,8 +114,6 @@ export function BookingCalendar() {
           </p>
         </div>
       )}
-
-      <AuthModal isOpen={showAuthModal} onClose={() => setShowAuthModal(false)} />
     </div>
   );
 }
